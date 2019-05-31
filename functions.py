@@ -26,7 +26,15 @@ def load_and_clean_accident_data():
     for col in unnecessary_columns:
         del df[col]
 
+
     return df
+
+def cleaner_data(df):
+    df = df[(df.Road_Surface_Conditions != 'Flood (Over 3cm of water)') & (df.Road_Surface_Conditions !='Snow')]
+    df = df[df.Speed_limit !=15]
+    df = df[(df.Weather_Conditions == 'Fine without high winds') | (df.Weather_Conditions =='Raining without high winds')]
+    return df
+    
 
 def find_severity_mus(df):
     severity_totals = df.groupby('Accident_Severity').size().values
