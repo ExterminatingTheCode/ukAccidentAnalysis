@@ -98,15 +98,19 @@ def connectTrafficData(accData, trafData):
 
     In-place attaches traffic data to accData as 'Traffic' column
     '''
+    #Haversine distance finds the actual distance between two points given their latitude and longitude
+    #Accuracy for Haversine formula is within 1%, doesn't account for ellipsoidal shape of the earth. 
+    from sklearn.metrics.pairwise import haversine_distances
 
-    accLocs = accData[['Latitude', 'Longitude']]
-    trafLocs = trafData[['Latitude',' Longitude']]
+    accLocs = accData[['Latitude', 'Longitude']].values
+    trafLocs = trafData[['Lat',' Lon']].values
 
     closest = np.ones((len(accData),2)) * 10
 
-    for i, acc in enumerate(accData.values):
-        distances = haversine_distances(accLocs.reshape((1,-1)),traffic_locations.values)
+    for i, acc in enumerate(accLocs.values):
+        distances = haversine_distances(acc.reshape((1,-1)),trafLocs)
         closest[i,0] = distances.min()
-        closest[i,1] = distances.argmin()
+        CPindex = distances.argmin()
+        closest[i,1] = accData.loc[CPindex].CP
                 
     np.save('/Users/mac/galvanize/week4/ukAccidentAnalysis/distance_matrix',closest)
