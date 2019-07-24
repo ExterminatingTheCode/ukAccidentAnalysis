@@ -102,15 +102,23 @@ def connectTrafficData(accData, trafData):
     #Accuracy for Haversine formula is within 1%, doesn't account for ellipsoidal shape of the earth. 
     from sklearn.metrics.pairwise import haversine_distances
 
-    accLocs = accData[['Latitude', 'Longitude']].values
-    trafLocs = trafData[['Lat',' Lon']].values
+    years = np.unique(accData['Year'])
+
+    # accLocs = accData[['Latitude', 'Longitude']].values
+    # trafLocs = trafData[['Lat','Lon']].values
 
     closest = np.ones((len(accData),2)) * 10
 
-    for i, acc in enumerate(accLocs.values):
-        distances = haversine_distances(acc.reshape((1,-1)),trafLocs)
-        closest[i,0] = distances.min()
-        CPindex = distances.argmin()
-        closest[i,1] = accData.loc[CPindex].CP
+    for year in years:
+        curAccs = accData[accData['Year'] == year]
+        curTraf = trafData[trafData['AADFYear'] == year]
+        curAccLocs = curAccs[['Latitude', 'Longitude']].values
+        curTrafLocs = curTraf[['Lat', 'Lon']].values
+        for i, acc in enumerate(curAccLocs):
+            distances = haversine_distances(acc.reshape((1,-1)),curTrafLocs)
+            closest[i,0] = distances.min()
+            CPindex = distances.argmin()
+            closest[i,1] = curTraf.iloc[CPindex].CP
+    return closest
                 
-    np.save('/Users/mac/galvanize/week4/ukAccidentAnalysis/distance_matrix',closest)
+    #np.save('/Users/mac/galvanize/week4/ukAccidentAnalysis/distance_matrix',closest)
