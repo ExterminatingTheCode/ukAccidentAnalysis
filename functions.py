@@ -41,7 +41,15 @@ def load_and_clean_accident_data():
 
 
 def cleaner_data(df):
-    #Removing conditions that I'm considering too anomalous to include
+    '''
+    Removes accidents with either anomalous conditions or missing location data.
+    Parameters:
+        df: Pandas DataFrame loaded with accident data. 
+        
+    Returns:
+        df: Same Pandas DataFrame but with a few less rows, removing accidents that will not be included. 
+    '''
+    
     df = df[(df.Road_Surface_Conditions != 'Flood (Over 3cm of water)') & (df.Road_Surface_Conditions !='Snow')]
     df = df[df.Speed_limit !=15]
     df = df[(df.Weather_Conditions == 'Fine without high winds') | (df.Weather_Conditions =='Raining without high winds')]
@@ -91,13 +99,16 @@ def calculate_p_values(actual_severity,expected_severity):
     
     return pvalues
 
-def connectTrafficData(accData, trafData):
+def connectTrafficData(accData, trafData, inplace=True):
     ''' 
+    Attaches traffic data to accident data as 'Traffic' column
     Parameters:
         accData: Pandas dataframe of the accident data
         trafData: Pandas dataframe of traffic data
-
-    In-place attaches traffic data to accData as 'Traffic' column
+        inplace: Default True. If True, will add a "CP" column to accident data with the closest traffic checkpoint. 
+            If false will return closest array which can be used to add traffic data. 
+    Returns:
+        closest: Array of closest traffic CP (checkpoint) and distance to it for each accident in accData. 
     '''
     #Haversine distance finds the actual distance between two points given their latitude and longitude
     #Accuracy for Haversine formula is within 1%, doesn't account for ellipsoidal shape of the earth. 
@@ -109,6 +120,7 @@ def connectTrafficData(accData, trafData):
     # trafLocs = trafData[['Lat','Lon']].values
 
     closest = np.ones((len(accData),2)) * 10
+    index = 0
 
     for year in years:
         curAccs = accData[accData['Year'] == year]
@@ -117,9 +129,13 @@ def connectTrafficData(accData, trafData):
         curTrafLocs = curTraf[['Lat', 'Lon']].values
         for i, acc in enumerate(curAccLocs):
             distances = haversine_distances(acc.reshape((1,-1)),curTrafLocs)
-            closest[i,0] = distances.min()
+            closest[index + i,0] = distances.min()
             CPindex = distances.argmin()
-            closest[i,1] = curTraf.iloc[CPindex].CP
-    return closest
+            closest[index + i,1] = curTraf.iloc[CPindex].CP
+        index += len(curAccs)
+    if inplace:
+        accData['CP'] = closest[:,1]
+    else:
+        return closest
                 
     #np.save('/Users/mac/galvanize/week4/ukAccidentAnalysis/distance_matrix',closest)
