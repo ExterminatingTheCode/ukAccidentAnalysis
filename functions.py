@@ -48,6 +48,8 @@ def load_new_accident_data():
 
     df = pd.read_csv("data/Accidents0515.csv")
 
+    df.dropna(subset=['Latitude'],inplace=True)
+
     return df
 
 def load_and_clean_traffic_data():
@@ -57,9 +59,17 @@ def load_and_clean_traffic_data():
     source : https://roadtraffic.dft.gov.uk/downloads
 
     '''
+    # Directly read in the data
     traffic = pd.read_csv("data/TrafficData/TotalTraffic.csv")
 
+    # Do not consider checkpoints that have "0" traffic
     traffic = traffic[traffic['all_motor_vehicles'] > 0].copy()
+
+    #Do not consider checkpoints that have zero length of road (results in division by zero)
+    traffic = traffic[traffic['link_length_km'] > 0].copy()
+
+    #Do not consider checkpoints with nan for link length, same as above
+    traffic.dropna(subset=['link_length_km'],inplace=True)
 
     return traffic
 
