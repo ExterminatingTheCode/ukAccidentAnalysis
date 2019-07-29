@@ -38,6 +38,32 @@ def load_and_clean_accident_data():
 
     return df
 
+def load_new_accident_data():
+    '''
+    This function loads in accident data from /data folder. 
+
+    Source of data: https://www.kaggle.com/silicon99/dft-accident-data
+        Source of that source: https://data.gov.uk/dataset/cb7ae6f0-4be6-4935-9277-47e5ce24a11f/road-safety-data
+    '''
+
+    df = pd.read_csv("data/Accidents0515.csv")
+
+    return df
+
+def load_and_clean_traffic_data():
+    '''
+    This function loads in accident data from /data folder
+
+    source : https://roadtraffic.dft.gov.uk/downloads
+
+    '''
+    traffic = pd.read_csv("data/TrafficData/TotalTraffic.csv")
+
+    traffic = traffic[traffic['all_motor_vehicles'] > 0].copy()
+
+    return traffic
+
+
 
 
 def cleaner_data(df):
@@ -99,7 +125,7 @@ def calculate_p_values(actual_severity,expected_severity):
     
     return pvalues
 
-def connectTrafficData(accData, trafData, inplace=True):
+def connectTrafficData(accData, trafData, inplace=True, hardsave=False):
     ''' 
     Attaches traffic data to accident data as 'Traffic' column
     Parameters:
@@ -107,6 +133,8 @@ def connectTrafficData(accData, trafData, inplace=True):
         trafData: Pandas dataframe of traffic data
         inplace: Default True. If True, will add a "CP" column to accident data with the closest traffic checkpoint. 
             If false will return closest array which can be used to add traffic data. 
+        hardsave
+
     Returns:
         closest: Array of closest traffic CP (checkpoint) and distance to it for each accident in accData. 
     '''
