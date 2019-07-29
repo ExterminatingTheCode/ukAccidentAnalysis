@@ -119,23 +119,42 @@ def connectTrafficData(accData, trafData, inplace=True):
     # accLocs = accData[['Latitude', 'Longitude']].values
     # trafLocs = trafData[['Lat','Lon']].values
 
-    closest = np.ones((len(accData),2)) * 10
+    closest = np.ones((len(accData),3)) * 10
     index = 0
 
     for year in years:
-        curAccs = accData[accData['Year'] == year]
-        curTraf = trafData[trafData['AADFYear'] == year]
-        curAccLocs = curAccs[['Latitude', 'Longitude']].values
-        curTrafLocs = curTraf[['Lat', 'Lon']].values
+        curAccs = accData[accData['Year'] == year].copy()
+        curTraf = trafData[trafData['year'] == year].copy()
+        curAccLocs = curAccs[['Latitude', 'Longitude']].copy().values
+        curTrafLocs = curTraf[['latitude', 'longitude']].copy().values
         for i, acc in enumerate(curAccLocs):
             distances = haversine_distances(acc.reshape((1,-1)),curTrafLocs)
             closest[index + i,0] = distances.min()
             CPindex = distances.argmin()
-            closest[index + i,1] = curTraf.iloc[CPindex].CP
+            closest[index + i,1] = curTraf.iloc[CPindex].count_point_id
         index += len(curAccs)
     if inplace:
-        accData['CP'] = closest[:,1]
+        accData['CP'] = closest[:,1].copy()
+        accData['Traffic'] = closest[:,2].copy()
     else:
         return closest
+
+
+    def collectTrafficStats(accData, trafData, inplace=True):
+        '''
+            Parameters:
+                accData: Accident Data with traffic checkpoint attached
+                trafData: Traffic Data
+                inplace: Default True. If true, attaches data to input DataFrame. If False, returns dictionary 
+
+            Returns:
+                Dictionary to map new columns if inpace=False, else no return.
+        '''
+
+        casualties = accData.groupby(['CP'])['Number_of_Casualties'].agg('sum')
+        accidents = accData.groupby(['CP'])['Number_of_Casualties'].agg('count')
+
+
+
                 
     #np.save('/Users/mac/galvanize/week4/ukAccidentAnalysis/distance_matrix',closest)
