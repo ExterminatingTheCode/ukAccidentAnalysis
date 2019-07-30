@@ -187,14 +187,16 @@ def connectTrafficData(accData, trafData, inplace=True, hardsave=False):
     #np.save('/Users/mac/galvanize/week4/ukAccidentAnalysis/distance_matrix',closest)
 
 
-def collectTrafficStats(accData, trafData, inplace=True):
+def collectTrafficStats(accData, trafData, inplace=True, hardsave = False):
     '''
         Parameters:
             accData: Accident Data with traffic checkpoint attached
             trafData: Traffic Data
             inplace: Default True. If true, attaches data to input DataFrame. If False, returns traffic  
+            hardsave: Default False, if both inplace and hardave are true than the traffic dataframe is hardsaved
 
         Returns:
+            Only returns if inplace is False
             Casualties: numpy array of the number of casualties for each Checkpoint and each year
             , Accidents: numpy array of the number of accidents at each point for each year in the dataset 
     '''
@@ -205,6 +207,8 @@ def collectTrafficStats(accData, trafData, inplace=True):
     if inplace:
         trafData[num_casualties] = casualties
         trafData[num_accidents] = accidents
+        if hardsave:
+            trafData.to_csv('data/TrafficStatistics.csv')
     else:
         return casualties, accidents
 
