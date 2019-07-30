@@ -179,25 +179,33 @@ def connectTrafficData(accData, trafData, inplace=True, hardsave=False):
     if inplace:
         accData['CP'] = closest[:,1].copy()
         accData['Traffic'] = closest[:,2].copy()
+        if hardsave
+            accData.to_csv("data/accidents_2005_to_2014_wTraffic.csv")
     else:
         return closest
-
-
-    def collectTrafficStats(accData, trafData, inplace=True):
-        '''
-            Parameters:
-                accData: Accident Data with traffic checkpoint attached
-                trafData: Traffic Data
-                inplace: Default True. If true, attaches data to input DataFrame. If False, returns dictionary 
-
-            Returns:
-                Dictionary to map new columns if inpace=False, else no return.
-        '''
-
-        casualties = accData.groupby(['CP'])['Number_of_Casualties'].agg('sum')
-        accidents = accData.groupby(['CP'])['Number_of_Casualties'].agg('count')
-
-
-
-                
+                        
     #np.save('/Users/mac/galvanize/week4/ukAccidentAnalysis/distance_matrix',closest)
+
+
+def collectTrafficStats(accData, trafData, inplace=True):
+    '''
+        Parameters:
+            accData: Accident Data with traffic checkpoint attached
+            trafData: Traffic Data
+            inplace: Default True. If true, attaches data to input DataFrame. If False, returns traffic  
+
+        Returns:
+            Casualties: numpy array of the number of casualties for each Checkpoint and each year
+            , Accidents: numpy array of the number of accidents at each point for each year in the dataset 
+    '''
+
+    casualties = accData.groupby(['CP','Year'])['Number_of_Casualties'].agg('sum')
+    accidents = accData.groupby(['CP','Year'])['Number_of_Casualties'].agg('count')
+
+    if inplace:
+        trafData[num_casualties] = casualties
+        trafData[num_accidents] = accidents
+    else:
+        return casualties, accidents
+
+
