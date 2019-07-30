@@ -50,6 +50,11 @@ def load_new_accident_data():
 
     df.dropna(subset=['Latitude'],inplace=True)
 
+    Year = np.zeros(len(df))
+    for i, dateString in enumerate(df['Date']):
+        Year[i] = int(dateString[-4:])
+    df['Year'] = Year
+
     return df
 
 def load_and_clean_traffic_data():
@@ -143,7 +148,7 @@ def connectTrafficData(accData, trafData, inplace=True, hardsave=False):
         trafData: Pandas dataframe of traffic data
         inplace: Default True. If True, will add a "CP" column to accident data with the closest traffic checkpoint. 
             If false will return closest array which can be used to add traffic data. 
-        hardsave
+        hardsave: Default False. If true will save the resulting DataFrame in the Data directory. 
 
     Returns:
         closest: Array of closest traffic CP (checkpoint) and distance to it for each accident in accData. 
