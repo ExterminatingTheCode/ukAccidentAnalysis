@@ -162,7 +162,7 @@ def connectTrafficData(accData, trafData, inplace=True, hardsave=False):
     # accLocs = accData[['Latitude', 'Longitude']].values
     # trafLocs = trafData[['Lat','Lon']].values
 
-    closest = np.ones((len(accData),3)) * 10
+    closest = np.ones((len(accData),5)) * 10
     index = 0
 
     for year in years:
@@ -175,11 +175,16 @@ def connectTrafficData(accData, trafData, inplace=True, hardsave=False):
             closest[index + i,0] = distances.min()
             CPindex = distances.argmin()
             closest[index + i,1] = curTraf.iloc[CPindex].count_point_id
+            closest[index + i,2] = curTraf.iloc[CPindex].all_motor_vehicles
+            closest[index + i,3] = curTraf.iloc[CPindex].latitude
+            closest[index + i,4] = curTraf.iloc[CPindex].longitude
         index += len(curAccs)
     if inplace:
         accData['CP'] = closest[:,1].copy()
         accData['Traffic'] = closest[:,2].copy()
-        if hardsave
+        accData['CPlatitude'] = closest[:,3].copy()
+        accData['CPlongitude'] = closest[:,4].copy()
+        if hardsave:
             accData.to_csv("data/accidents_2005_to_2014_wTraffic.csv")
     else:
         return closest
@@ -205,11 +210,35 @@ def collectTrafficStats(accData, trafData, inplace=True, hardsave = False):
     accidents = accData.groupby(['CP','Year'])['Number_of_Casualties'].agg('count')
 
     if inplace:
-        trafData[num_casualties] = casualties
-        trafData[num_accidents] = accidents
+        trafData['num_casualties'] = casualties
+        trafData['num_accidents'] = accidents
         if hardsave:
             trafData.to_csv('data/TrafficStatistics.csv')
     else:
         return casualties, accidents
 
+def mainGraphAccidentData(accData, CoastLatitudes, CoastLongitudes):
+    '''
+    Paramters:
 
+    Returns:
+
+    '''
+    
+    df1 = accData[accData['Year'] == 2005].copy()
+    df1 = df1[df1['Location_Northing_OSGR'] < 70000].copy()
+
+    latitudes = (df1.Latitude - df1.Latitude.values.min())/(df1.Latitude.values.max() - df1.Latitude.values.min())
+    longitudes = (df1.Longitude.values - df1.Longitude.values.min())/(df1.Longitude.values.max() - df1.Longitude.values.min())
+
+    fig, ax = plt.subplots(figsize= (6,9.5))
+
+    if CoastLatitudes:
+        ax.plot(CoastLatitudes, CoastLongitudes, alpha=1, c='black')
+
+    ax.scatter(latitudes, longitudes, s=1, alpha=1)
+    ax.set_yticklabels([])
+    ax.set_xticklabels([])
+    ax.grid(False)
+    ax.set_facecolor('xkcd:white')
+    None
