@@ -217,16 +217,18 @@ def collectTrafficStats(accData, trafData, inplace=True, hardsave = False):
     else:
         return casualties, accidents
 
-def mainGraphAccidentData(accData, CoastLatitudes, CoastLongitudes):
+def mainGraphAccidentData(accData, CoastLatitudes=None, CoastLongitudes=None):
     '''
     Paramters:
 
     Returns:
 
     '''
-    
+    import matplotlib.pyplot as plt
+
     df1 = accData[accData['Year'] == 2005].copy()
-    df1 = df1[df1['Location_Northing_OSGR'] < 70000].copy()
+    df1 = df1[df1['Location_Northing_OSGR'] < 990000].copy()
+    df1 = df1[df1['Longitude'] > -6.3].copy()
 
     latitudes = (df1.Latitude - df1.Latitude.values.min())/(df1.Latitude.values.max() - df1.Latitude.values.min())
     longitudes = (df1.Longitude.values - df1.Longitude.values.min())/(df1.Longitude.values.max() - df1.Longitude.values.min())
@@ -236,7 +238,42 @@ def mainGraphAccidentData(accData, CoastLatitudes, CoastLongitudes):
     if CoastLatitudes:
         ax.plot(CoastLatitudes, CoastLongitudes, alpha=1, c='black')
 
-    ax.scatter(latitudes, longitudes, s=1, alpha=1)
+    ax.scatter(longitudes, latitudes, s=1, alpha=1)
+    ax.set_yticklabels([])
+    ax.set_xticklabels([])
+    ax.grid(False)
+    ax.set_facecolor('xkcd:white')
+    None
+
+
+def graphSubsetAccidentData(accData,latitude=None ,longitude =None, CoastLatitudes=None, CoastLongitudes=None):
+    '''
+    Paramters:
+
+    Returns:
+
+    '''
+    import matplotlib.pyplot as plt
+
+    df1 = accData[accData['Year'] == 2005].copy()
+    if latitude:
+        df1 = df1[df1['Latitude'] > latitude].copy()
+        df1 = df1[df1['Longitude'] > longitude].copy()
+        CoastLatitudes = CoastLatitudes[CoastLatitudes < Latitude]
+        CoastLongitudes = CoastLongitudes[CoastLongitudes < Longitude]
+    else:
+        df1 = df1[df1['Location_Northing_OSGR'] < 990000].copy()
+        df1 = df1[df1['Longitude'] > -6.3].copy()
+
+    latitudes = (df1.Latitude - df1.Latitude.values.min())/(df1.Latitude.values.max() - df1.Latitude.values.min())
+    longitudes = (df1.Longitude.values - df1.Longitude.values.min())/(df1.Longitude.values.max() - df1.Longitude.values.min())
+
+    fig, ax = plt.subplots(figsize= (6,9.5))
+
+    if CoastLatitudes:
+        ax.plot(CoastLatitudes, CoastLongitudes, alpha=1, c='black')
+
+    ax.scatter(longitudes, latitudes, s=1, alpha=1)
     ax.set_yticklabels([])
     ax.set_xticklabels([])
     ax.grid(False)
